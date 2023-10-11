@@ -6,10 +6,6 @@ require "tempfile"
 
 module Blake3
   class DigestTest < Minitest::Test
-    def test_that_it_has_a_version_number
-      refute_nil(::Blake3::VERSION)
-    end
-
     def test_hasher_hexdigest_returns_expected_value_for_non_empty_string
       hasher = Digest::Blake3.new
       hasher.update("ho")

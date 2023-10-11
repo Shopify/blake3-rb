@@ -1,3 +1,3 @@
 # frozen_string_literal: true
 
-require_relative "blake3"
+require "digest/blake3"

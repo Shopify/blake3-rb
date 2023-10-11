@@ -9,16 +9,19 @@ Rake::TestTask.new(:test) do |t|
   t.test_files = FileList["test/**/**/*_test.rb"]
 end
 
-require "rubocop/rake_task"
-
-RuboCop::RakeTask.new
+begin
+  require "rubocop/rake_task"
+  RuboCop::RakeTask.new
+rescue LoadError
+  # Optional dependency
+end
 
 require "rb_sys/extensiontask"
 
 task build: :compile
 
-RbSys::ExtensionTask.new("blake3") do |ext|
-  ext.lib_dir = "lib/blake3"
+RbSys::ExtensionTask.new("blake3_ext") do |ext|
+  ext.lib_dir = "lib/digest/blake3"
 end
 
 task default: [:compile, :test, :rubocop]

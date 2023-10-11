@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "lib/blake3/version"
-
 Gem::Specification.new do |spec|
-  spec.name = "blake3-ruby"
-  spec.version = Blake3::VERSION
+  spec.name = "digest-blake3"
+  spec.version = "0.1.0"
   spec.authors = ["Ian Ker-Seymer"]
   spec.email = ["ian.kerseymer@shopify.com"]
 
