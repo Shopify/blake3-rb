@@ -20,7 +20,8 @@ jobs:
         with:
           stable-ruby-versions: |
             exclude: ["2.5", "2.6", "2.7", "3.0"]
-  ci:
+
+  test:
     runs-on: ${{ matrix.os }}
     needs: ci-data
     strategy:
@@ -28,7 +29,7 @@ jobs:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         ruby: ${{ fromJSON(needs.ci-data.outputs.result).stable-ruby-versions }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
@@ -37,5 +38,30 @@ jobs:
           cargo-cache: true
           cache-version: v1
 
+      - name: Compile
+        run: bundle exec rake compile
+
       - name: Run ruby tests
-        run: bundle exec rake
+        run: bundle exec rake test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
+        with:
+          rustup-toolchain: "1.73"
+          ruby-version: "3.2"
+          bundler-cache: true
+          cargo-cache: true
+          cache-version: v1
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Cargo
+        run: cargo fmt --check
+
+      - name: Rubocop
+        run: bundle exec rake rubocop

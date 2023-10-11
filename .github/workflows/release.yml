@@ -24,7 +24,7 @@
     source-gem:
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v4
 
         - uses: ruby/setup-ruby@v1
           with:
@@ -34,10 +34,32 @@
         - name: Build gem
           run: bundle exec rake build
 
-        - uses: actions/upload-artifact@v2
+        - uses: actions/upload-artifact@v3
           with:
             name: source-gem
             path: pkg/*.gem
+
+    test-source-gem-install:
+      runs-on: ${{ matrix.os }}
+      needs: source-gem
+      strategy:
+        matrix:
+          os: ["ubuntu-latest", "macos-latest"]
+      steps:
+        - uses: actions/checkout@v4
+
+        - uses: actions/download-artifact@v3
+          with:
+            name: source-gem
+            path: pkg
+
+        - uses: ruby/setup-ruby@v1
+          with:
+            ruby-version: "head"
+
+        - name: Test source gem install
+          shell: bash
+          run: test/test_gem_install.sh pkg/*.gem
 
     cross-gem:
       name: Compile native gem for ${{ matrix.platform }}
@@ -47,7 +69,7 @@
         matrix:
           platform: ${{ fromJSON(needs.ci-data.outputs.result).supported-ruby-platforms }}
       steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v4
 
         - uses: ruby/setup-ruby@v1
           with:
@@ -60,27 +82,49 @@
             platform: ${{ matrix.platform }}
             ruby-versions: ${{ join(fromJSON(needs.ci-data.outputs.result).stable-ruby-versions, ',') }}
 
-        - uses: actions/upload-artifact@v2
+        - uses: actions/upload-artifact@v3
           with:
             name: cross-gem
             path: ${{ steps.cross-gem.outputs.gem-path }}
 
+    test-cross-gem-install:
+      runs-on: ${{ matrix.os }}
+      needs: cross-gem
+      strategy:
+        matrix:
+          os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+      steps:
+        - uses: actions/checkout@v4
+
+        - uses: actions/download-artifact@v3
+          with:
+            name: cross-gem
+            path: pkg
+
+        - uses: ruby/setup-ruby@v1
+          with:
+            ruby-version: "3.2"
+
+        - name: Test cross gem install
+          shell: bash
+          run: test/test_gem_install.sh precompiled
+
     release:
       name: Create release for ${{ github.ref }}
-      needs: [cross-gem, source-gem]
+      needs: [test-cross-gem-install, test-source-gem-install]
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/download-artifact@v2
+        - uses: actions/download-artifact@v3
           with:
             name: cross-gem
             path: cross-gem
 
-        - uses: actions/download-artifact@v2
+        - uses: actions/download-artifact@v3
           with:
             name: source-gem
             path: source-gem
 
-        - name: Unzip gem artifacts
+        - name: Move gems to pkg
           run: |
             ls -la cross-gem source-gem
             mkdir -p pkg
