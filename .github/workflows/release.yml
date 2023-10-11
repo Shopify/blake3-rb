@@ -1,0 +1,117 @@
+---
+  name: Release
+
+  on:
+    push:
+      tags:
+        - "v*"
+        - "cross-gem/*"
+    workflow_dispatch:
+
+  jobs:
+    ci-data:
+      runs-on: ubuntu-latest
+      outputs:
+        result: ${{ steps.fetch.outputs.result }}
+      steps:
+        - uses: oxidize-rb/actions/fetch-ci-data@v1
+          id: fetch
+          with:
+            supported-ruby-platforms: |
+              exclude: ["arm-linux"]
+            stable-ruby-versions: |
+              exclude: ["2.5", "2.6", "2.7", "head"]
+    source-gem:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+
+        - uses: ruby/setup-ruby@v1
+          with:
+            ruby-version: '3.2'
+            bundler-cache: true
+
+        - name: Build gem
+          run: bundle exec rake build
+
+        - uses: actions/upload-artifact@v2
+          with:
+            name: source-gem
+            path: pkg/*.gem
+
+    cross-gem:
+      name: Compile native gem for ${{ matrix.platform }}
+      runs-on: ubuntu-latest
+      needs: ci-data
+      strategy:
+        matrix:
+          platform: ${{ fromJSON(needs.ci-data.outputs.result).supported-ruby-platforms }}
+      steps:
+        - uses: actions/checkout@v2
+
+        - uses: ruby/setup-ruby@v1
+          with:
+            ruby-version: '3.2'
+            bundler-cache: true
+
+        - uses: oxidize-rb/actions/cross-gem@v1
+          id: cross-gem
+          with:
+            platform: ${{ matrix.platform }}
+            ruby-versions: ${{ join(fromJSON(needs.ci-data.outputs.result).stable-ruby-versions, ',') }}
+
+        - uses: actions/upload-artifact@v2
+          with:
+            name: cross-gem
+            path: ${{ steps.cross-gem.outputs.gem-path }}
+
+    release:
+      name: Create release for ${{ github.ref }}
+      needs: [cross-gem, source-gem]
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/download-artifact@v2
+          with:
+            name: cross-gem
+            path: cross-gem
+
+        - uses: actions/download-artifact@v2
+          with:
+            name: source-gem
+            path: source-gem
+
+        - name: Unzip gem artifacts
+          run: |
+            mkdir -p pkg
+            unzip cross-gem/cross-gem.zip -d pkg
+            unzip source-gem/source-gem.zip -d pkg
+
+        - name: Create release
+          if: startsWith(github.ref, 'refs/tags/v')
+          uses: actions/github-script@v6
+          with:
+            github-token: "${{ secrets.GITHUB_TOKEN }}"
+            script: |
+              const release = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: "${{ github.ref }}",
+                name: "${{ github.ref_name }}",
+                generate_release_notes: true
+              });
+
+              const globber =  await glob.create("pkg/*.gem");
+
+              for await (const file of globber.globGenerator()) {
+                console.log("Uploading " + file);
+
+                const data = fs.readFileSync(file);
+
+                await github.rest.repos.uploadReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.data.id,
+                  name: path.basename(file),
+                  data: data,
+                });
+              }
