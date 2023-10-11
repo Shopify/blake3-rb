@@ -3,7 +3,7 @@
 require "bundler/setup"
 require "benchmark/ips"
 require "digest"
-require "blake3"
+require "digest/blake3"
 
 system("bundle exec rake compile:release") || abort("Failed to compile extension")
 
