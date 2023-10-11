@@ -45,7 +45,12 @@ GEM
     unicode-display_width (2.4.2)
 
 PLATFORMS
+  aarch64-linux
+  arm64-darwin
   arm64-darwin-22
+  x86_64-darwin
+  x86_64-linux
+  x86_64-linux-musl
 
 DEPENDENCIES
   benchmark-ips (~> 2.12)
