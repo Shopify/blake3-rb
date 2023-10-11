@@ -114,12 +114,28 @@ hasher.reset
 
 ## Benchmarks
 
-Here are some benchmarks comparing this gem with other digests:
+Here are some benchmarks comparing this gem with other digests on `x86_64-linux`:
 
 ```bash
-$ ruby bench/algs.rb
+$ ruby bench/string.rb
+...
+Warming up --------------------------------------
+        Digest::SHA1    61.000  i/100ms
+      Digest::SHA256    21.000  i/100ms
+         Digest::MD5    58.000  i/100ms
+      Blake3::Digest   560.000  i/100ms
+Calculating -------------------------------------
+        Digest::SHA1    612.174  (± 0.3%) i/s -      3.111k in   5.081922s
+      Digest::SHA256    215.281  (± 0.0%) i/s -      1.092k in   5.072453s
+         Digest::MD5    586.009  (± 0.3%) i/s -      2.958k in   5.047759s
+      Blake3::Digest      5.698k (± 0.6%) i/s -     28.560k in   5.012308s
 
-TODO
+Comparison:
+      Blake3::Digest:     5698.2 i/s
+        Digest::SHA1:      612.2 i/s - 9.31x  slower
+         Digest::MD5:      586.0 i/s - 9.72x  slower
+      Digest::SHA256:      215.3 i/s - 26.47x  slower
+
 ```
 
 ## Testing
