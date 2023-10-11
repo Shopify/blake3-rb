@@ -43,7 +43,7 @@ Benchmark.ips do |x|
 
   x.report("Blake3::Digest") do
     INPUTS.each do |input|
-      digest = Blake3::Digest.new
+      digest = Digest::Blake3.new
       digest << input
       digest.digest
     end

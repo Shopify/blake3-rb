@@ -13,6 +13,8 @@ GEM
     json (2.6.3)
     language_server-protocol (3.17.0.3)
     minitest (5.20.0)
+    minitest-focus (1.4.0)
+      minitest (>= 4, < 6)
     parallel (1.23.0)
     parser (3.2.2.3)
       ast (~> 2.4.1)
@@ -57,6 +59,7 @@ DEPENDENCIES
   benchmark-ips (~> 2.12)
   blake3-ruby!
   minitest
+  minitest-focus (~> 1.4)
   rake
   rake-compiler
   rb_sys

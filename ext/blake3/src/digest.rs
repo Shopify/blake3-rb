@@ -1,216 +1,71 @@
-use std::{cell::UnsafeCell, fs::File, io::BufReader};
+use rb_sys::{
+    rb_cObject, rb_const_get, rb_define_class_under, rb_intern, rb_ivar_set, rb_require, size_t,
+};
+use std::ffi::{c_int, c_uchar, c_void};
+use std::os::raw::c_char;
 
-use base64::{prelude::BASE64_STANDARD, Engine};
-use magnus::{
-    class::object,
-    encoding::RbEncoding,
-    exception::arg_error,
-    function, method,
-    typed_data::Obj,
-    value::{InnerValue, Lazy, ReprValue},
-    Error, Integer, Module, Object, RString, Ruby, TryConvert, Value,
+use crate::bindings::{rb_digest_make_metadata, RbDigestMetadataT, RUBY_DIGEST_API_VERSION};
+
+const BLOCK_LEN: usize = 64;
+const DIGEST_LEN: usize = 32;
+
+#[repr(C)]
+#[derive(Debug)]
+struct Blake3Ctx {
+    inner: Option<blake3_impl::Hasher>,
+}
+
+static DIGEST_METADATA: RbDigestMetadataT = RbDigestMetadataT {
+    api_version: RUBY_DIGEST_API_VERSION,
+    digest_len: DIGEST_LEN as _,
+    block_len: BLOCK_LEN as _,
+    ctx_size: std::mem::size_of::<Blake3Ctx>() as _,
+    init_func: blake3_init,
+    update_func: blake3_update,
+    finish_func: blake3_finish,
 };
 
-use crate::{ERROR_CLASS, ROOT_MODULE};
-
-#[magnus::wrap(class = "Blake3::Digest", free_immediately)]
-#[derive(Debug)]
-pub struct Digest {
-    inner: UnsafeCell<blake3_impl::Hasher>,
+// Initialize the context, which has already been allocated by Ruby.
+extern "C" fn blake3_init(ctx: *mut c_void) -> c_int {
+    let ctx = ctx as *mut Blake3Ctx;
+    let ctx = unsafe { &mut *ctx };
+    ctx.inner = Some(blake3_impl::Hasher::new());
+    1
 }
 
-impl Digest {
-    pub fn new() -> Self {
-        Self {
-            inner: UnsafeCell::new(blake3_impl::Hasher::new()),
-        }
-    }
-
-    pub fn file(rb_self: Obj<Self>, filename: Value) -> Result<Obj<Self>, Error> {
-        let mut hasher = rb_self.inner_mut()?;
-        let filename = RString::try_convert(filename)?;
-        let file = File::open(unsafe { filename.as_str()? })
-            .map_err(|e| Error::new(arg_error(), format!("Error opening file: {}", e)))?;
-        let mut file = BufReader::new(file);
-
-        std::io::copy(&mut file, &mut hasher).map_err(|e| {
-            Error::new(
-                ERROR_CLASS.get_inner_with(&Ruby::get().expect("Ruby interpreter not initialized")),
-                format!("Error reading file: {}", e),
-            )
-        })?;
-
-        Ok(rb_self)
-    }
-
-    pub fn cloned(&self) -> Result<Self, Error> {
-        let hasher = self.inner()?.clone();
-
-        Ok(Self {
-            inner: UnsafeCell::new(hasher),
-        })
-    }
-
-    pub fn reset(rb_self: Obj<Self>) -> Result<Obj<Self>, Error> {
-        rb_self.inner_mut()?.reset();
-
-        Ok(rb_self)
-    }
-
-    pub fn update(rb_self: Obj<Self>, input: RString) -> Result<Obj<Self>, Error> {
-        let hasher = rb_self.inner_mut()?;
-        hasher.update(unsafe { input.as_slice() });
-
-        Ok(rb_self)
-    }
-
-    pub fn digest(&self) -> Result<RString, Error> {
-        let hasher = self.inner()?;
-        let hash = hasher.finalize();
-        let outstring = RString::enc_new(hash.as_bytes(), RbEncoding::ascii8bit());
-
-        Ok(outstring)
-    }
-
-    pub fn digest_and_reset(&self) -> Result<RString, Error> {
-        let ret = self.digest()?;
-        self.inner_mut()?.reset();
-
-        Ok(ret)
-    }
-
-    pub fn hexdigest(&self) -> Result<RString, Error> {
-        static EMPTY_SLICE: [u8; 64] = [b' '; 64];
-
-        let hasher = self.inner()?;
-        let hash = hasher.finalize();
-        let outstring = RString::enc_new(EMPTY_SLICE, RbEncoding::usascii());
-
-        // SAFETY: We are the only ones with access to this string's internal
-        // buffer, and we know it's the proper length for the hash, so we save
-        // an allocation by using it directly.
-        let mut_slice = unsafe { rstring_mut_slice(outstring) };
-
-        hex::encode_to_slice(hash.as_bytes(), mut_slice).map_err(|e| {
-            Error::new(
-                ERROR_CLASS.get_inner_with(&Ruby::get().expect("Ruby interpreter not initialized")),
-                format!("Error encoding hash to hex: {}", e),
-            )
-        })?;
-
-        Ok(outstring)
-    }
-
-    fn hexdigest_and_reset(&self) -> Result<RString, Error> {
-        let ret = self.hexdigest()?;
-        self.inner_mut()?.reset();
-
-        Ok(ret)
-    }
-
-    pub fn base64digest(&self) -> Result<RString, Error> {
-        static EMPTY_SLICE: [u8; 44] = [b' '; 44];
-
-        let hasher = self.inner()?;
-        let hash = hasher.finalize();
-        let outstring = RString::enc_new(EMPTY_SLICE, RbEncoding::usascii());
-
-        // SAFETY: We are the only ones with access to this string's internal
-        // buffer, and we know it's the proper length for the hash, so we save
-        // an allocation by using it directly.
-        let mut_slice = unsafe { rstring_mut_slice(outstring) };
-
-        BASE64_STANDARD
-            .encode_slice(hash.as_bytes(), mut_slice)
-            .map_err(|e| {
-                Error::new(
-                    ERROR_CLASS
-                        .get_inner_with(&Ruby::get().expect("Ruby interpreter not initialized")),
-                    format!("Error encoding hash to base64: {}", e),
-                )
-            })?;
-
-        Ok(outstring)
-    }
-
-    pub fn base64digest_and_reset(&self) -> Result<RString, Error> {
-        let ret = self.base64digest()?;
-        self.inner_mut()?.reset();
-
-        Ok(ret)
-    }
-
-    pub fn digest_length(&self) -> Integer {
-        static DIGEST_LEN: Lazy<Integer> = Lazy::new(|ruby| ruby.integer_from_u64(32));
-        DIGEST_LEN.get_inner_with(&Ruby::get().expect("Ruby interpreter not initialized"))
-    }
-
-    pub fn block_length(&self) -> Integer {
-        static BLOCK_LEN: Lazy<Integer> = Lazy::new(|ruby| ruby.integer_from_u64(64));
-        BLOCK_LEN.get_inner_with(&Ruby::get().expect("Ruby interpreter not initialized"))
-    }
-
-    pub fn inspect(&self) -> Result<RString, Error> {
-        let outstring = RString::enc_new("#<Blake3::Digest: ", RbEncoding::usascii());
-        outstring.buf_append(self.hexdigest()?)?;
-        outstring.cat(">");
-
-        Ok(outstring)
-    }
-
-    fn is_equal(rb_self: Obj<Self>, other: Value) -> Result<bool, Error> {
-        if let Ok(other_digest) = Obj::<Self>::try_convert(other) {
-            Ok(other_digest.inner()?.finalize() == rb_self.inner()?.finalize())
-        } else if let Ok(other_string) = RString::try_convert(other) {
-            let self_hex = rb_self.hexdigest()?;
-            Ok(self_hex.eql(other_string)?)
-        } else {
-            Ok(false)
-        }
-    }
-
-    fn inner_mut(&self) -> Result<&'_ mut blake3_impl::Hasher, Error> {
-        Ok(unsafe { &mut *self.inner.get() })
-    }
-
-    fn inner(&self) -> Result<&'_ blake3_impl::Hasher, Error> {
-        Ok(unsafe { &*self.inner.get() })
+// Update the context with the given data.
+extern "C" fn blake3_update(ctx: *mut c_void, data: *mut c_uchar, len: size_t) {
+    let ctx = ctx as *mut Blake3Ctx;
+    let ctx = unsafe { &mut *ctx };
+    if let Some(inner) = ctx.inner.as_mut() {
+        let slice = unsafe { std::slice::from_raw_parts(data, len as _) };
+        inner.update(slice);
     }
 }
 
-unsafe fn rstring_mut_slice<'a>(string: RString) -> &'a mut [u8] {
-    let slice = string.as_slice();
-    let ptr = slice.as_ptr() as *mut u8;
-    let len = slice.len();
-    std::slice::from_raw_parts_mut(ptr, len)
+// Finalize the context and write the digest to the given pointer.
+extern "C" fn blake3_finish(ctx: *mut c_void, digest: *mut c_uchar) -> c_int {
+    let ctx = ctx as *mut Blake3Ctx;
+    let ctx = unsafe { &mut *ctx };
+    if let Some(inner) = ctx.inner.as_mut() {
+        let slice = unsafe { std::slice::from_raw_parts_mut(digest, DIGEST_LEN) };
+        inner.finalize_xof().fill(slice);
+        1
+    } else {
+        0
+    }
 }
 
-pub(crate) fn init() -> Result<(), Error> {
-    let ruby = Ruby::get().expect("Ruby interpreter not initialized");
-
-    let klass = ROOT_MODULE
-        .get_inner_with(&ruby)
-        .define_class("Digest", object())?;
-
-    klass.define_singleton_method("new", function!(Digest::new, 0))?;
-
-    klass.define_method("<<", method!(Digest::update, 1))?;
-    klass.define_method("==", method!(Digest::is_equal, 1))?;
-    klass.define_method("base64digest!", method!(Digest::base64digest_and_reset, 0))?;
-    klass.define_method("base64digest", method!(Digest::base64digest, 0))?;
-    klass.define_method("block_length", method!(Digest::block_length, 0))?;
-    klass.define_method("digest!", method!(Digest::digest_and_reset, 0))?;
-    klass.define_method("digest", method!(Digest::digest, 0))?;
-    klass.define_method("digest_length", method!(Digest::digest_length, 0))?;
-    klass.define_method("file", method!(Digest::file, 1))?;
-    klass.define_method("hexdigest!", method!(Digest::hexdigest_and_reset, 0))?;
-    klass.define_method("hexdigest", method!(Digest::hexdigest, 0))?;
-    klass.define_method("inspect", method!(Digest::inspect, 0))?;
-    klass.define_method("new", method!(Digest::cloned, 0))?;
-    klass.define_method("reset", method!(Digest::reset, 0))?;
-    klass.define_method("size", method!(Digest::digest_length, 0))?;
-    klass.define_method("to_s", method!(Digest::hexdigest, 0))?;
-    klass.define_method("update", method!(Digest::update, 1))?;
-
-    Ok(())
+pub unsafe extern "C" fn init() {
+    rb_require("digest\0".as_ptr() as *const c_char);
+    let digest_module = rb_const_get(rb_cObject, rb_intern("Digest\0".as_ptr() as *const c_char));
+    let digest_base = rb_const_get(digest_module, rb_intern("Base\0".as_ptr() as *const c_char));
+    let klass = rb_define_class_under(
+        digest_module,
+        "Blake3\0".as_ptr() as *const c_char,
+        digest_base,
+    );
+    let meta = rb_digest_make_metadata(&DIGEST_METADATA);
+    let metadata_id = rb_intern("metadata\0".as_ptr() as *const c_char);
+    rb_ivar_set(klass, metadata_id, meta);
 }

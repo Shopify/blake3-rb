@@ -23,7 +23,7 @@ Benchmark.ips do |x|
   end
 
   x.report("Blake3::Digest.file") do
-    Blake3::Digest.file("Gemfile.lock")
+    Digest::Blake3.file("Gemfile.lock")
   end
 
   x.compare!
