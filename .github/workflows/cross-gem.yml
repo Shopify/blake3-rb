@@ -18,9 +18,9 @@
           id: fetch
           with:
             supported-ruby-platforms: |
-              exclude: ["arm-linux", "x64-mingw32"]
+              exclude: ["arm-linux"]
             stable-ruby-versions: |
-              exclude: ["2.5", "2.6", "2.7", "3.0", "head"]
+              exclude: ["2.5", "2.6", "2.7", "head"]
     cross-gem:
       name: Compile native gem for ${{ matrix.platform }}
       runs-on: ubuntu-latest
