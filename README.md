@@ -1,6 +1,5 @@
 # Blake3 Ruby Gem
 
-![Gem Version](https://badge.fury.io/rb/digest-blake3.svg)]
 ![Build Status](https://github.com/Shopify/blake3-ruby/workflows/CI/badge.svg)
 
 Blake3 is a Ruby gem that provides a simple and efficient way to compute the Blake3 cryptographic hash function. This gem is designed to be easy to use and integrate into your Ruby projects.
