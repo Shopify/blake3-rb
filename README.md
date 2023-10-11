@@ -1,8 +1,8 @@
-# Blake3 Ruby Gem
+# `digest-blake3`
 
 ![Build Status](https://github.com/Shopify/blake3-ruby/workflows/CI/badge.svg)
 
-Blake3 is a Ruby gem that provides a simple and efficient way to compute the Blake3 cryptographic hash function. This gem is designed to be easy to use and integrate into your Ruby projects.
+Blake3 is a Ruby gem that provides a simple and efficient way to compute the Blake3 cryptographic hash function. This gem is designed to be easy to use and integrate into your Ruby projects using the Ruby [`digest` framework](https://github.com/ruby/digest).
 
 ## Installation
 

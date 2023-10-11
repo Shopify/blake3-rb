@@ -1,5 +1,6 @@
 mod bindings;
 
+use blake3::Hasher;
 use rb_sys::{
     rb_cObject, rb_const_get, rb_define_class_under, rb_intern, rb_ivar_set, rb_require, size_t,
 };
@@ -14,7 +15,7 @@ const DIGEST_LEN: usize = 32;
 #[repr(C)]
 #[derive(Debug)]
 struct Blake3Ctx {
-    inner: Option<blake3_impl::Hasher>,
+    inner: Option<Hasher>,
 }
 
 static DIGEST_METADATA: RbDigestMetadataT = RbDigestMetadataT {
@@ -31,7 +32,7 @@ static DIGEST_METADATA: RbDigestMetadataT = RbDigestMetadataT {
 extern "C" fn blake3_init(ctx: *mut c_void) -> c_int {
     let ctx = ctx as *mut Blake3Ctx;
     let ctx = unsafe { &mut *ctx };
-    ctx.inner = Some(blake3_impl::Hasher::new());
+    ctx.inner = Some(Hasher::new());
     1
 }
 

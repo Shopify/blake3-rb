@@ -11,4 +11,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rb-sys = { version = "0.9.82", features = ["stable-api-compiled-fallback"] }
-blake3-impl = { package = "blake3", version = "1.5.0" }
+blake3 = { version = "1.5.0" }
