@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-  spec.extensions = ["ext/blake3/extconf.rb"]
+  spec.extensions = ["ext/digest/blake3_ext/extconf.rb"]
 
   spec.add_dependency("rb_sys", "~> 0.9")
 end
