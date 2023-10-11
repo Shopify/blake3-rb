@@ -5,3 +5,7 @@ AllCops:
   NewCops: enable
   TargetRubyVersion: 3.0
   SuggestExtensions: false
+
+Naming/FileName:
+  Exclude:
+    - 'lib/blake3-ruby.rb'

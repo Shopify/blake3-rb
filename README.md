@@ -1,5 +1,8 @@
 # Blake3 Ruby Gem
 
+![Gem Version](https://badge.fury.io/rb/blake3.svg)]
+![Build Status](https://github.com/Shopify/blake3-ruby/workflows/CI/badge.svg)
+
 Blake3 is a Ruby gem that provides a simple and efficient way to compute the Blake3 cryptographic hash function. This gem is designed to be easy to use and integrate into your Ruby projects.
 
 ## Installation
@@ -154,7 +157,7 @@ $ bundle exec rake test
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Shopify/blake3. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/Shopify/blake3/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/Shopify/blake3-ruby. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/Shopify/blake3-ruby/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -162,4 +165,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Blake3 project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/Shopify/blake3/blob/main/CODE_OF_CONDUCT.md).
+Everyone interacting in the Blake3 project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/Shopify/blake3-ruby/blob/main/CODE_OF_CONDUCT.md).

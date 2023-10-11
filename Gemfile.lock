@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    blake3 (0.1.0)
+    blake3-ruby (0.1.0)
       rb_sys (~> 0.9)
 
 GEM
@@ -55,7 +55,7 @@ PLATFORMS
 
 DEPENDENCIES
   benchmark-ips (~> 2.12)
-  blake3!
+  blake3-ruby!
   minitest
   rake
   rake-compiler

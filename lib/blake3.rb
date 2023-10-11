@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+if defined?(Blake3::Hasher)
+  warn "WARNING: Both blake3 and blake3-ruby gems are installed, and may conflict with each other"
+end
+
 require_relative "blake3/version"
 
 # Tries to require the precompiled extension for the given Ruby version first
