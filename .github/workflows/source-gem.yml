@@ -28,7 +28,7 @@
             bundle exec rake build
             gem install --verbose pkg/*.gem
 
-            if ruby -rblake3 -e "puts Blake3::Digest.new.update('foo')"; then
+            if ruby -rdigest/blake3 -e "puts Blake3::Digest.new.update('foo')"; then
               echo "Success"
             else
               echo "Failure"
