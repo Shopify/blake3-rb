@@ -1,0 +1,14 @@
+[package]
+name = "blake3_ext"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ian Ker-Seymer <ian.kerseymer@shopify.com>"]
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rb-sys = { version = "0.9.82", features = ["stable-api-compiled-fallback"] }
+blake3 = { version = "1.5.0" }
