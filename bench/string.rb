@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
+system("bundle exec rake compile:release") || abort("Failed to compile extension")
+
 require "bundler/setup"
 require "benchmark/ips"
 require "digest"
 require "digest/blake3"
-
-system("bundle exec rake compile:release") || abort("Failed to compile extension")
 
 INPUTS = [
   "hello world",
