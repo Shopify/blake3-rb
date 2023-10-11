@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bundler/setup"
 require "benchmark/ips"
 require "digest/sha2"
@@ -33,7 +35,3 @@ Benchmark.ips do |x|
 
   x.compare!
 end
-
-
-
-
