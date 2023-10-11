@@ -82,9 +82,9 @@
 
         - name: Unzip gem artifacts
           run: |
+            ls -la cross-gem source-gem
             mkdir -p pkg
-            unzip cross-gem/cross-gem.zip -d pkg
-            unzip source-gem/source-gem.zip -d pkg
+            cp cross-gem/*.gem source-gem/*.gem pkg/
 
         - name: Create release
           if: startsWith(github.ref, 'refs/tags/v')
