@@ -2,7 +2,7 @@
 
 require "bundler/setup"
 require "benchmark/ips"
-require "digest/sha2"
+require "digest"
 require "blake3"
 
 system("bundle exec rake compile:release") || abort("Failed to compile extension")
@@ -15,11 +15,27 @@ INPUTS = [
 ]
 
 Benchmark.ips do |x|
-  x.config(time: 10, warmup: 1)
+  x.config(time: 5, warmup: 1)
+
+  x.report("Digest::SHA1") do
+    INPUTS.each do |input|
+      digest = Digest::SHA1.new
+      digest << input
+      digest.digest
+    end
+  end
 
   x.report("Digest::SHA256") do
     INPUTS.each do |input|
       digest = Digest::SHA256.new
+      digest << input
+      digest.digest
+    end
+  end
+
+  x.report("Digest::MD5") do
+    INPUTS.each do |input|
+      digest = Digest::MD5.new
       digest << input
       digest.digest
     end

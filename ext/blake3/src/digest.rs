@@ -1,4 +1,4 @@
-use std::cell::UnsafeCell;
+use std::{cell::UnsafeCell, fs::File, io::BufReader};
 
 use base64::{prelude::BASE64_STANDARD, Engine};
 use magnus::{
@@ -26,10 +26,12 @@ impl Digest {
         }
     }
 
-    pub fn from_file(filename: RString) -> Result<Self, Error> {
-        let mut hasher = blake3_impl::Hasher::new();
-        let mut file = std::fs::File::open(unsafe { filename.as_str()? })
+    pub fn file(rb_self: Obj<Self>, filename: Value) -> Result<Obj<Self>, Error> {
+        let mut hasher = rb_self.inner_mut()?;
+        let filename = RString::try_convert(filename)?;
+        let file = File::open(unsafe { filename.as_str()? })
             .map_err(|e| Error::new(arg_error(), format!("Error opening file: {}", e)))?;
+        let mut file = BufReader::new(file);
 
         std::io::copy(&mut file, &mut hasher).map_err(|e| {
             Error::new(
@@ -38,9 +40,7 @@ impl Digest {
             )
         })?;
 
-        Ok(Self {
-            inner: UnsafeCell::new(hasher),
-        })
+        Ok(rb_self)
     }
 
     pub fn cloned(&self) -> Result<Self, Error> {
@@ -193,24 +193,24 @@ pub(crate) fn init() -> Result<(), Error> {
         .define_class("Digest", object())?;
 
     klass.define_singleton_method("new", function!(Digest::new, 0))?;
-    klass.define_singleton_method("file", function!(Digest::from_file, 1))?;
 
-    klass.define_method("new", method!(Digest::cloned, 0))?;
-    klass.define_method("inspect", method!(Digest::inspect, 0))?;
-    klass.define_method("update", method!(Digest::update, 1))?;
-    klass.define_method("reset", method!(Digest::reset, 0))?;
-    klass.define_method("digest_length", method!(Digest::digest_length, 0))?;
-    klass.define_method("block_length", method!(Digest::block_length, 0))?;
-    klass.define_method("size", method!(Digest::digest_length, 0))?;
     klass.define_method("<<", method!(Digest::update, 1))?;
-    klass.define_method("digest", method!(Digest::digest, 0))?;
-    klass.define_method("digest!", method!(Digest::digest_and_reset, 0))?;
-    klass.define_method("hexdigest", method!(Digest::hexdigest, 0))?;
-    klass.define_method("to_s", method!(Digest::hexdigest, 0))?;
-    klass.define_method("hexdigest!", method!(Digest::hexdigest_and_reset, 0))?;
-    klass.define_method("base64digest", method!(Digest::base64digest, 0))?;
-    klass.define_method("base64digest!", method!(Digest::base64digest_and_reset, 0))?;
     klass.define_method("==", method!(Digest::is_equal, 1))?;
+    klass.define_method("base64digest!", method!(Digest::base64digest_and_reset, 0))?;
+    klass.define_method("base64digest", method!(Digest::base64digest, 0))?;
+    klass.define_method("block_length", method!(Digest::block_length, 0))?;
+    klass.define_method("digest!", method!(Digest::digest_and_reset, 0))?;
+    klass.define_method("digest", method!(Digest::digest, 0))?;
+    klass.define_method("digest_length", method!(Digest::digest_length, 0))?;
+    klass.define_method("file", method!(Digest::file, 1))?;
+    klass.define_method("hexdigest!", method!(Digest::hexdigest_and_reset, 0))?;
+    klass.define_method("hexdigest", method!(Digest::hexdigest, 0))?;
+    klass.define_method("inspect", method!(Digest::inspect, 0))?;
+    klass.define_method("new", method!(Digest::cloned, 0))?;
+    klass.define_method("reset", method!(Digest::reset, 0))?;
+    klass.define_method("size", method!(Digest::digest_length, 0))?;
+    klass.define_method("to_s", method!(Digest::hexdigest, 0))?;
+    klass.define_method("update", method!(Digest::update, 1))?;
 
     Ok(())
 }

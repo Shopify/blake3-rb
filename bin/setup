@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
-set -vx
+set -e
 
-bundle install
+if ! command -v cargo >/dev/null; then
+  echo "ERROR: Rust is not installed. Please install Rust and try again (https:///rustup.rs)."
+  exit 1
+fi
 
-# Do any other automated setup that you need to do here
+bundle install --jobs=3 --retry=3
+
+bundle exec rake compile
