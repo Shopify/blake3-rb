@@ -1,4 +1,4 @@
-use std::cell::{Ref, RefCell, RefMut};
+use std::cell::UnsafeCell;
 
 use base64::{prelude::BASE64_STANDARD, Engine};
 use magnus::{
@@ -14,14 +14,15 @@ use magnus::{
 use crate::{ERROR_CLASS, ROOT_MODULE};
 
 #[magnus::wrap(class = "Blake3::Digest", free_immediately)]
+#[derive(Debug)]
 pub struct Digest {
-    inner: RefCell<blake3_impl::Hasher>,
+    inner: UnsafeCell<blake3_impl::Hasher>,
 }
 
 impl Digest {
     pub fn new() -> Self {
         Self {
-            inner: RefCell::new(blake3_impl::Hasher::new()),
+            inner: UnsafeCell::new(blake3_impl::Hasher::new()),
         }
     }
 
@@ -38,7 +39,7 @@ impl Digest {
         })?;
 
         Ok(Self {
-            inner: RefCell::new(hasher),
+            inner: UnsafeCell::new(hasher),
         })
     }
 
@@ -46,7 +47,7 @@ impl Digest {
         let hasher = self.inner()?.clone();
 
         Ok(Self {
-            inner: RefCell::new(hasher),
+            inner: UnsafeCell::new(hasher),
         })
     }
 
@@ -57,7 +58,7 @@ impl Digest {
     }
 
     pub fn update(rb_self: Obj<Self>, input: RString) -> Result<Obj<Self>, Error> {
-        let mut hasher = rb_self.inner_mut()?;
+        let hasher = rb_self.inner_mut()?;
         hasher.update(unsafe { input.as_slice() });
 
         Ok(rb_self)
@@ -157,13 +158,6 @@ impl Digest {
         Ok(outstring)
     }
 
-    fn inner(&self) -> Result<Ref<'_, blake3_impl::Hasher>, Error> {
-        let ruby = Ruby::get().expect("Ruby interpreter not initialized");
-        self.inner
-            .try_borrow()
-            .map_err(|e| Error::new(ERROR_CLASS.get_inner_with(&ruby), format!("{}", e)))
-    }
-
     fn is_equal(rb_self: Obj<Self>, other: Value) -> Result<bool, Error> {
         if let Ok(other_digest) = Obj::<Self>::try_convert(other) {
             Ok(other_digest.inner()?.finalize() == rb_self.inner()?.finalize())
@@ -175,11 +169,12 @@ impl Digest {
         }
     }
 
-    fn inner_mut(&self) -> Result<RefMut<'_, blake3_impl::Hasher>, Error> {
-        let ruby = Ruby::get().expect("Ruby interpreter not initialized");
-        self.inner
-            .try_borrow_mut()
-            .map_err(|e| Error::new(ERROR_CLASS.get_inner_with(&ruby), format!("{}", e)))
+    fn inner_mut(&self) -> Result<&'_ mut blake3_impl::Hasher, Error> {
+        Ok(unsafe { &mut *self.inner.get() })
+    }
+
+    fn inner(&self) -> Result<&'_ blake3_impl::Hasher, Error> {
+        Ok(unsafe { &*self.inner.get() })
     }
 }
 

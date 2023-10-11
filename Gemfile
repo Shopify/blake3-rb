@@ -11,3 +11,5 @@ gem "rb_sys"
 gem "minitest"
 gem "rubocop"
 gem "rubocop-shopify"
+
+gem "benchmark-ips", "~> 2.12"
