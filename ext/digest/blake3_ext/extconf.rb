@@ -3,4 +3,4 @@
 require "mkmf"
 require "rb_sys/mkmf"
 
-create_rust_makefile("digest/blake3_ext")
+create_rust_makefile("digest/blake3/blake3_ext")
