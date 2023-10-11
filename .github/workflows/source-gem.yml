@@ -1,0 +1,36 @@
+---
+  name: Source Gem
+
+  on:
+    push:
+      branches:
+        - main
+
+    pull_request:
+
+  jobs:
+    source-gem:
+      runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: ["ubuntu-latest", "macos-latest"]
+      steps:
+        - uses: actions/checkout@v3
+
+        - uses: ruby/setup-ruby@v1
+          with:
+            ruby-version: "3.2"
+            bundler-cache: true
+
+        - name: Test source gem
+          shell: bash
+          run: |
+            bundle exec rake build
+            gem install --verbose pkg/*.gem
+
+            if ruby -rblake3 -e "puts Blake3::Digest.new.update('foo')"; then
+              echo "Success"
+            else
+              echo "Failure"
+              exit 1
+            fi
