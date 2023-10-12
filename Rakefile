@@ -18,11 +18,6 @@ task :tag do
   puts "Tagged #{GEMSPEC.version}"
 end
 
-desc "Compile Rust extension"
-task :compile do
-  sh "cargo build --release --manifest-path ext/digest/blake3_ext/Cargo.toml"
-end
-
 desc "Run tests"
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
