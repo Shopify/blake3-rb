@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name = "digest-blake3"
-  spec.version = "0.1.0.pre6"
+  spec.version = "0.1.0.pre7"
   spec.authors = ["Ian Ker-Seymer"]
   spec.email = ["ian.kerseymer@shopify.com"]
 
