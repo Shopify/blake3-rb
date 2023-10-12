@@ -13,7 +13,7 @@ task :release do
 
   old_version = GEMSPEC.version.to_s
   print "Enter new version (current is #{old_version}): "
-  new_version = STDIN.gets.strip
+  new_version = $stdin.gets.strip
   new_git_tag = "v#{new_version}"
 
   abort("ERROR: #{GEMSPEC.version} tag already exists") if system("git rev-parse #{new_git_tag}")
@@ -22,17 +22,35 @@ task :release do
   new_gemspec = old_gemspec.gsub("version = \"#{old_version}\"", "version = \"#{new_version}\"")
 
   File.write("digest-blake3.gemspec", new_gemspec)
-  diff = `git diff digest-blake3.gemspec`
+  diff = %x(git diff digest-blake3.gemspec)
 
   puts "Diff:\n#{diff}"
   print "Does this look good? (y/n): "
 
-  if STDIN.gets.strip == "y"
+  if $stdin.gets.strip == "y"
     sh "bundle"
     sh "git commit -am \"Bump version to #{new_git_tag}\""
     sh "git tag #{new_git_tag}"
     sh "git push"
     sh "git push --tags"
+
+    sleep 3
+
+    runs = %x(gh run list -w release -e push -b #{new_git_tag} --json=databaseId --jq '.[].databaseId')
+    runs = runs.strip.split("\n")
+
+    if runs.empty?
+      warn("WARN: no release runs found")
+    elsif runs.length > 1
+      warn("WARN: multiple release runs found")
+    else
+      puts "Watching release run #{runs.first}, safe to Ctrl-C..."
+      sleep 3
+      system("gh run watch #{runs.first}")
+      shipit_link = "https://shipit.shopify.io/shopify/digest-blake3/release"
+      system("osascript -e 'display notification \"Release complete -> #{shipit_link}\" with title \"digest-blake3\"'")
+      puts "Release complete, see #{shipit_link}"
+    end
   else
     File.write("digest-blake3.gemspec", old_gemspec)
     puts "Aborting release"
