@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+current_git_tag="$(git describe --tags --abbrev=0)"
+
+./scripts/download_github_release_artifacts "Shopify/digest-blake3" "$current_git_tag"
+
+for gem in $(ls pkg/*.gem); do
+  if [ "${SHIPIT:-0}" != "1" ]; then
+    echo "WARN: Skipping push of $gem because \$SHIPIT is not set to 1"
+  elif ! gem push "$gem"; then
+    echo "WARN: Failed to push $gem"
+  else
+    echo "Successfully pushed $gem"
+  fi
+done

@@ -1,23 +1,26 @@
 # frozen_string_literal: true
 
 require "rake/testtask"
+require "bundler/gem_tasks"
 
 GEMSPEC = Bundler.load_gemspec("digest-blake3.gemspec")
 
-desc "Build source gem"
-task :build do
-  FileUtils.mkdir_p("pkg")
-  sh "gem build #{GEMSPEC.name}.gemspec --output pkg/#{GEMSPEC.name}-#{GEMSPEC.version}.gem"
+desc "Publish git tag for current version"
+task :tag do
+  # ensure no uncommitted changes
+  abort("ERROR: uncommited changes") unless system("git diff --exit-code")
+
+  sh "git tag #{GEMSPEC.version}"
+  sh "git push --tags"
+  puts "Tagged #{GEMSPEC.version}"
 end
 
-desc "Upload gems to rubygems.org"
-task :release do
-  sh "scripts/pre_release"
-  current_tag = %x(git describe --tags --abbrev=0).strip
-  sh "scripts/download_github_release_artifacts Shopify/digest-blake3 #{current_tag}"
-  Dir["pkg/*.gem"].each { |gem| sh "gem push #{gem}" }
+desc "Compile Rust extension"
+task :compile do
+  sh "cargo build --release --manifest-path ext/digest/blake3_ext/Cargo.toml"
 end
 
+desc "Run tests"
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.libs << "lib"
@@ -26,15 +29,20 @@ end
 
 begin
   require "rubocop/rake_task"
+
   RuboCop::RakeTask.new
 rescue LoadError
-  # Optional dependency
+  warn("WARN: rubocop not installed, so no lint tasks will be defined")
 end
 
-require "rb_sys/extensiontask"
+begin
+  require "rb_sys/extensiontask"
 
-RbSys::ExtensionTask.new("blake3_ext", GEMSPEC) do |ext|
-  ext.lib_dir = "lib/digest/blake3"
+  RbSys::ExtensionTask.new("blake3_ext", GEMSPEC) do |ext|
+    ext.lib_dir = "lib/digest/blake3"
+  end
+rescue Errno::ENOENT
+  warn("WARN: cargo not installed, so no compile tasks will be defined")
 end
 
 task default: [:compile, :test, :rubocop]

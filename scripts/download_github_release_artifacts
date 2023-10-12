@@ -1,13 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
 repo="$1"
 tag="$2"
 
-release_id=$(curl -s "https://api.github.com/repos/$repo/releases/tags/$tag" | jq -r .id)
+github_request() {
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" "$@"
+  else
+    curl -s "$@"
+  fi
+}
 
-assets=$(curl -s "https://api.github.com/repos/$repo/releases/$release_id/assets" | jq -c '.[]')
+release_id="$(github_request "https://api.github.com/repos/$repo/releases/tags/$tag" | jq -r .id)"
+assets="$(github_request "https://api.github.com/repos/$repo/releases/$release_id/assets" | jq -c '.[]')"
+
+echo "Downloading artifacts from $repo#$tag (release_id=$release_id)"
 
 for asset in $(echo "${assets}" | jq -r '. | @base64'); do
   _jq() {
@@ -18,7 +27,7 @@ for asset in $(echo "${assets}" | jq -r '. | @base64'); do
   name=$(_jq '.name')
   mkdir -p pkg
   echo "Saving artifact to pkg/${name}..."
-  curl -sLo "pkg/${name}" "${url}"
+  github_request -Lo "pkg/${name}" "${url}"
 done
 
 echo "Done!"
