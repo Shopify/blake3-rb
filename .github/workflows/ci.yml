@@ -38,6 +38,11 @@ jobs:
           cargo-cache: true
           cache-version: v1
 
+      - uses: "oxidize-rb/actions/cargo-binstall@v1"
+        with:
+          crate: "b3sum"
+          version: "1.5.0"
+
       - name: Compile
         run: bundle exec rake compile
 

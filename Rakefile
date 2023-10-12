@@ -1,9 +1,22 @@
 # frozen_string_literal: true
 
-require "bundler/gem_tasks"
 require "rake/testtask"
 
 GEMSPEC = Bundler.load_gemspec("digest-blake3.gemspec")
+
+desc "Build source gem"
+task :build do
+  FileUtils.mkdir_p("pkg")
+  sh "gem build #{GEMSPEC.name}.gemspec --output pkg/#{GEMSPEC.name}-#{GEMSPEC.version}.gem"
+end
+
+desc "Upload gems to rubygems.org"
+task :release do
+  sh "scripts/pre_release"
+  current_tag = %x(git describe --tags --abbrev=0).strip
+  sh "scripts/download_github_release_artifacts Shopify/digest-blake3 #{current_tag}"
+  Dir["pkg/*.gem"].each { |gem| sh "gem push #{gem}" }
+end
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
