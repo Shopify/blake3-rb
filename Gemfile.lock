@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    digest-blake3 (0.1.0.pre6)
+    digest-blake3 (0.1.0.pre7)
       rb_sys (~> 0.9)
 
 GEM
