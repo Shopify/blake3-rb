@@ -9,7 +9,8 @@ Blake3 is a Ruby gem that provides a simple and efficient way to compute the Bla
 Add this line to your application's Gemfile:
 
 ```ruby
-gem "digest-blake3"
+# Temporarily, use GitHub release until we figure out https://github.com/willbryant/digest-blake3/issues/6
+gem "digest-blake3", github: "Shopify/digest-blake3"
 ```
 
 And then execute:
