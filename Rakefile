@@ -7,10 +7,11 @@ GEMSPEC = Bundler.load_gemspec("digest-blake3.gemspec")
 
 desc "Publish git tag for current version"
 task :tag do
-  # ensure no uncommitted changes
   abort("ERROR: uncommited changes") unless system("git diff --exit-code")
+  abort("ERROR: #{GEMSPEC.version} tag already exists") if system("git rev-parse #{GEMSPEC.version}")
 
   sh "git tag #{GEMSPEC.version}"
+  sh "git push"
   sh "git push --tags"
   puts "Tagged #{GEMSPEC.version}"
 end
