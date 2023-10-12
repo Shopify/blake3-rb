@@ -5,17 +5,34 @@ require "bundler/gem_tasks"
 
 GEMSPEC = Bundler.load_gemspec("digest-blake3.gemspec")
 
-desc "Publish git tag for current version"
-task :tag do
-  sh "bundle"
+Rake::Task["release"].clear
 
+desc "Trigger publishing of a new release"
+task :release do
   abort("ERROR: uncommited changes") unless system("git diff --exit-code")
-  abort("ERROR: #{GEMSPEC.version} tag already exists") if system("git rev-parse #{GEMSPEC.version}")
 
-  sh "git tag #{GEMSPEC.version}"
-  sh "git push"
-  sh "git push --tags"
-  puts "Tagged #{GEMSPEC.version}"
+  old_version = GEMSPEC.version.to_s
+  print "Enter new version (current is #{old_version}): "
+  new_version = STDIN.gets.strip
+
+  abort("ERROR: #{GEMSPEC.version} tag already exists") if system("git rev-parse #{new_version}")
+
+  old_gemspec = File.read("digest-blake3.gemspec")
+  new_gemspec = old_gemspec.gsub("version = \"#{old_version}\"", "version = \"#{new_version}\"")
+
+  File.write("digest-blake3.gemspec", new_gemspec)
+  sh "git diff digest-blake3.gemspec"
+  print "Does this look good? (y/n): "
+
+  if STDIN.gets.strip == "y"
+    sh "git commit -am \"Bump version to #{new_version}\""
+    sh "git tag #{new_version}"
+    sh "git push"
+    sh "git push --tags"
+  else
+    File.write("digest-blake3.gemspec", old_gemspec)
+    puts "Aborting release"
+  end
 end
 
 desc "Run tests"
