@@ -8,4 +8,4 @@ AllCops:
 
 Naming/FileName:
   Exclude:
-    - 'lib/digest-blake3.rb'
+    - 'lib/blake3-rb.rb'

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    digest-blake3 (0.1.0.pre9)
+    blake3-rb (0.1.0.pre9)
       rb_sys (~> 0.9)
 
 GEM
@@ -57,7 +57,7 @@ PLATFORMS
 
 DEPENDENCIES
   benchmark-ips
-  digest-blake3!
+  blake3-rb!
   minitest
   minitest-focus
   rake

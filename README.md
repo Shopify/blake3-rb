@@ -1,4 +1,4 @@
-# `digest-blake3`
+# `blake3-rb`
 
 ![Build Status](https://github.com/Shopify/blake3-ruby/workflows/CI/badge.svg)
 
@@ -9,8 +9,7 @@ Blake3 is a Ruby gem that provides a simple and efficient way to compute the Bla
 Add this line to your application's Gemfile:
 
 ```ruby
-# Temporarily, use GitHub release until we figure out https://github.com/willbryant/digest-blake3/issues/6
-gem "digest-blake3", github: "Shopify/digest-blake3"
+gem "blake3-rb", github: "Shopify/blake3-rb"
 ```
 
 And then execute:

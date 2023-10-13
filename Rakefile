@@ -3,7 +3,7 @@
 require "rake/testtask"
 require "bundler/gem_tasks"
 
-GEMSPEC = Bundler.load_gemspec("digest-blake3.gemspec")
+GEMSPEC = Bundler.load_gemspec("blake3-rb.gemspec")
 
 Rake::Task["release"].clear
 
@@ -18,11 +18,11 @@ task :release do
 
   abort("ERROR: #{GEMSPEC.version} tag already exists") if system("git rev-parse #{new_git_tag}")
 
-  old_gemspec = File.read("digest-blake3.gemspec")
+  old_gemspec = File.read("blake3-rb.gemspec")
   new_gemspec = old_gemspec.gsub("version = \"#{old_version}\"", "version = \"#{new_version}\"")
 
-  File.write("digest-blake3.gemspec", new_gemspec)
-  diff = %x(git diff digest-blake3.gemspec)
+  File.write("blake3-rb.gemspec", new_gemspec)
+  diff = %x(git diff blake3-rb.gemspec)
 
   puts "Diff:\n#{diff}"
   print "Does this look good? (y/n): "
@@ -47,12 +47,12 @@ task :release do
       puts "Watching release run #{runs.first}, safe to Ctrl-C..."
       sleep 3
       system("gh run watch #{runs.first}")
-      shipit_link = "https://shipit.shopify.io/shopify/digest-blake3/release"
-      system("osascript -e 'display notification \"Release complete -> #{shipit_link}\" with title \"digest-blake3\"'")
+      shipit_link = "https://shipit.shopify.io/shopify/blake3-rb/release"
+      system("osascript -e 'display notification \"Release complete -> #{shipit_link}\" with title \"blake3-rb\"'")
       puts "Release complete, see #{shipit_link}"
     end
   else
-    File.write("digest-blake3.gemspec", old_gemspec)
+    File.write("blake3-rb.gemspec", old_gemspec)
     puts "Aborting release"
   end
 end
