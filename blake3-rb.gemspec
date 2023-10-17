@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.description = "Provides native bindings to the Blake3 hash function for Ruby."
   spec.homepage = "https://github.com/Shopify/blake3-ruby"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.0.0"
+  spec.required_ruby_version = ">= 3.1.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
