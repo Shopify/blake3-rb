@@ -4,7 +4,6 @@ Gem::Specification.new do |spec|
   spec.name = "blake3-rb"
   spec.version = "0.1.0.pre10"
   spec.authors = ["Ian Ker-Seymer"]
-  spec.email = ["ian.kerseymer@shopify.com"]
 
   spec.summary = "Blake3 hash function bindings for Ruby."
   spec.description = "Provides native bindings to the Blake3 hash function for Ruby."
