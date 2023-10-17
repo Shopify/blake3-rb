@@ -1,5 +1,6 @@
 # `blake3-rb`
 
+[![Gem Version](https://badge.fury.io/rb/blake3-rb.svg)](https://badge.fury.io/rb/blake3-rb)
 ![Build Status](https://github.com/Shopify/blake3-ruby/workflows/CI/badge.svg)
 
 Blake3 is a Ruby gem that provides a simple and efficient way to compute the Blake3 cryptographic hash function. This gem is designed to be easy to use and integrate into your Ruby projects using the Ruby [`digest` framework](https://github.com/ruby/digest).
@@ -9,13 +10,14 @@ Blake3 is a Ruby gem that provides a simple and efficient way to compute the Bla
 Add this line to your application's Gemfile:
 
 ```ruby
-gem "blake3-rb", github: "Shopify/blake3-rb"
+gem "blake3-rb"
 ```
 
-And then execute:
+We provide pre-built binaries most common platforms. This is the preferred way to install this gem since it will be faster and more reliable than compiling from source. Make sure Bundler is configured to use the pre-built binaries by running:
 
 ```bash
-$ bundle install
+bundle lock --add-platform x86_64-linux
+bundle install    # resolve dependencies for platform-specific gems
 ```
 
 ## Usage
