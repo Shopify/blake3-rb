@@ -8,6 +8,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
+    base64 (0.2.0)
     benchmark-ips (2.13.0)
     json (2.7.1)
     language_server-protocol (3.17.0.3)
@@ -54,6 +55,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  base64 (~> 0.2.0)
   benchmark-ips
   blake3-rb!
   minitest
