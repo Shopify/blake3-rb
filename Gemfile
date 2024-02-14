@@ -13,3 +13,5 @@ gem "rubocop"
 gem "rubocop-shopify"
 gem "benchmark-ips"
 gem "minitest-focus"
+
+gem "base64", "~> 0.2.0"
