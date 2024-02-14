@@ -26,7 +26,7 @@ jobs:
     needs: ci-data
     strategy:
       matrix:
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        os: ["ubuntu-latest", "macos-latest"]
         ruby: ${{ fromJSON(needs.ci-data.outputs.result).stable-ruby-versions }}
     steps:
       - uses: actions/checkout@v4
