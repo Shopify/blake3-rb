@@ -28,7 +28,6 @@
 
         - uses: ruby/setup-ruby@v1
           with:
-            ruby-version: '3.2'
             bundler-cache: true
 
         - name: Build gem
@@ -73,7 +72,6 @@
 
         - uses: ruby/setup-ruby@v1
           with:
-            ruby-version: '3.2'
             bundler-cache: true
 
         - uses: oxidize-rb/actions/cross-gem@v1
@@ -102,8 +100,6 @@
             path: pkg
 
         - uses: ruby/setup-ruby@v1
-          with:
-            ruby-version: "3.2"
 
         - name: Test cross gem install
           shell: bash
