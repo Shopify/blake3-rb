@@ -58,7 +58,7 @@ task :release do
 end
 
 desc "Run tests"
-Rake::TestTask.new(:test) do |t|
+Rake::TestTask.new(:ruby_test) do |t|
   t.libs << "test"
   t.libs << "lib"
   t.test_files = FileList["test/**/**/*_test.rb"]
@@ -81,5 +81,27 @@ begin
 rescue Errno::ENOENT
   warn("WARN: cargo not installed, so no compile tasks will be defined")
 end
+
+desc "Run cargo test"
+task :cargo_test do
+  sh("cargo", "test", "--workspace", "--", "--nocapture")
+rescue
+  Dir["target/debug/deps/*"].each do |f|
+    next unless f.start_with?("blake3_ext")
+
+    puts "::group::nm #{f}"
+    system("nm", f)
+    puts "::endgroup::"
+  end
+
+  if RUBY_VERSION.start_with?("3.1")
+    warn("WARN: cargo test failed, but this is a bug on Ruby 3.1")
+  else
+    abort("ERROR: cargo test failed")
+  end
+end
+
+desc "Run all tests"
+task test: [:ruby_test, :cargo_test]
 
 task default: [:compile, :test, :rubocop]

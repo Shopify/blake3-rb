@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    blake3-rb (1.5.4)
+    blake3-rb (1.5.4.1)
       rb_sys (~> 0.9)
 
 GEM
@@ -24,7 +24,7 @@ GEM
     rake (13.1.0)
     rake-compiler (1.2.7)
       rake
-    rb_sys (0.9.88)
+    rb_sys (0.9.97)
     regexp_parser (2.9.0)
     rexml (3.2.6)
     rubocop (1.60.2)

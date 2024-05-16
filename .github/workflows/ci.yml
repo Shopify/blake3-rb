@@ -25,6 +25,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: ci-data
     strategy:
+      fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-latest"]
         ruby: ${{ fromJSON(needs.ci-data.outputs.result).stable-ruby-versions }}
@@ -33,6 +34,7 @@ jobs:
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
+          rustup-toolchain: "1.78"
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
           cargo-cache: true
@@ -41,7 +43,7 @@ jobs:
       - uses: "oxidize-rb/actions/cargo-binstall@v1"
         with:
           crate: "b3sum"
-          version: "1.5.0"
+          version: "1.5.1"
 
       - name: Compile
         run: bundle exec rake compile
@@ -56,8 +58,8 @@ jobs:
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
-          rustup-toolchain: "1.73"
-          ruby-version: "3.2"
+          rustup-toolchain: "1.78"
+          ruby-version: "3.3"
           bundler-cache: true
           cargo-cache: true
           cache-version: v1
