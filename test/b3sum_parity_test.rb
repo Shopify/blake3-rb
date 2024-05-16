@@ -3,7 +3,11 @@
 require "test_helper"
 
 class B3SumParityTest < Minitest::Test
-  %x(git ls-files).split("\n").sort.each_with_index do |file, i|
+  files = %x(git ls-files).split("\n").sort
+
+  raise "No files found" if files.empty?
+
+  files.each_with_index do |file, i|
     next unless File.exist?(file)
 
     slug = file.gsub(/[^a-z0-9]/i, "_").downcase
