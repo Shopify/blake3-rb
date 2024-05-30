@@ -2,7 +2,9 @@
 
 Gem::Specification.new do |spec|
   spec.name = "blake3-rb"
-  spec.version = "1.5.4"
+  # Eventually, we would like to align with the upstream blake3 crate version,
+  # so only ship patch-level changes in the gem version.
+  spec.version = "1.5.4.1"
   spec.authors = ["Ian Ker-Seymer"]
 
   spec.summary = "Blake3 hash function bindings for Ruby."
