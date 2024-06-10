@@ -2,6 +2,7 @@
 
 require "rake/testtask"
 require "bundler/gem_tasks"
+require "timeout"
 
 GEMSPEC = Bundler.load_gemspec("blake3-rb.gemspec")
 
@@ -84,7 +85,9 @@ end
 
 desc "Run cargo test"
 task :cargo_test do
-  sh("cargo", "test", "--workspace", "--", "--nocapture")
+  Timeout.timeout(30) do
+    sh("cargo", "test", "--workspace", "--", "--nocapture")
+  end
 rescue
   Dir["target/debug/deps/*"].each do |f|
     next unless f.start_with?("blake3_ext")
