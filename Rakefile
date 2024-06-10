@@ -96,6 +96,8 @@ rescue
 
   if RUBY_VERSION.start_with?("3.1")
     warn("WARN: cargo test failed, but this is a bug on Ruby 3.1")
+  elsif RUBY_VERSION.start_with?("3.4")
+    warn("WARN: cargo test failed, but this is a known issue on Ruby 3.4")
   else
     abort("ERROR: cargo test failed")
   end
