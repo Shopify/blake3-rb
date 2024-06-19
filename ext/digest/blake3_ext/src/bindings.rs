@@ -19,7 +19,7 @@ pub struct RbDigestMetadataT {
     pub finish_func: RbDigestHashFinishFuncT,
 }
 
-#[cfg(ruby_gt_3_3)]
+#[cfg(digest_use_rb_ext_resolve_symbol)]
 pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE {
     static mut WRAPPER: Option<unsafe extern "C" fn(&'static RbDigestMetadataT) -> VALUE> = None;
 
@@ -50,7 +50,7 @@ pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE
     panic!("Failed to resolve rb_digest_wrap_metadata");
 }
 
-#[cfg(not(ruby_gt_3_3))]
+#[cfg(not(digest_use_rb_ext_resolve_symbol))]
 pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE {
     use rb_sys::{rb_data_object_wrap, rb_obj_freeze};
     let data = rb_data_object_wrap(
