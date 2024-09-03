@@ -47,7 +47,7 @@
       steps:
         - uses: actions/checkout@v4
 
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4.1.7
           with:
             name: source-gem
             path: pkg
@@ -94,7 +94,7 @@
       steps:
         - uses: actions/checkout@v4
 
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4.1.7
           with:
             name: cross-gem
             path: pkg
@@ -110,12 +110,12 @@
       needs: [test-cross-gem-install, test-source-gem-install]
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4.1.7
           with:
             name: cross-gem
             path: cross-gem
 
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4.1.7
           with:
             name: source-gem
             path: source-gem
