@@ -19,7 +19,7 @@ rand = "0.8.5"
 rb-sys-test-helpers = "0.2.0"
 
 [build-dependencies]
-rb-sys-env = "0.1.2"
+rb-sys-env = "0.2.1"
 
 
 [lints.rust]
