@@ -19,9 +19,12 @@ pub struct RbDigestMetadataT {
     pub finish_func: RbDigestHashFinishFuncT,
 }
 
-#[cfg(digest_use_rb_ext_resolve_symbol)]
+#[allow(dead_code)]
+type WrapperType = unsafe extern "C" fn(&'static RbDigestMetadataT) -> VALUE;
+
+#[cfg(any(digest_use_rb_ext_resolve_symbol, ruby_gte_3_4))]
 pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE {
-    static mut WRAPPER: Option<unsafe extern "C" fn(&'static RbDigestMetadataT) -> VALUE> = None;
+    static mut WRAPPER: Option<WrapperType> = None;
 
     unsafe fn load_wrapper() {
         use rb_sys::rb_ext_resolve_symbol;
@@ -36,7 +39,7 @@ pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE
             let symbol_ptr = rb_ext_resolve_symbol(lib_name, symbol_name);
 
             if !symbol_ptr.is_null() {
-                WRAPPER = Some(std::mem::transmute(symbol_ptr));
+                WRAPPER = Some(std::mem::transmute::<*mut c_void, WrapperType>(symbol_ptr));
             } else {
                 panic!("Failed to resolve rb_digest_wrap_metadata");
             }
@@ -50,7 +53,7 @@ pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE
     panic!("Failed to resolve rb_digest_wrap_metadata");
 }
 
-#[cfg(not(digest_use_rb_ext_resolve_symbol))]
+#[cfg(not(any(digest_use_rb_ext_resolve_symbol, ruby_gte_3_4)))]
 pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE {
     use rb_sys::{rb_data_object_wrap, rb_obj_freeze};
     let data = rb_data_object_wrap(

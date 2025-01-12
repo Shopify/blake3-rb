@@ -1,3 +1,4 @@
+#![allow(clippy::manual_c_str_literals)]
 mod bindings;
 
 use blake3::Hasher;
