@@ -14,7 +14,7 @@
       outputs:
         result: ${{ steps.fetch.outputs.result }}
       steps:
-        - uses: oxidize-rb/actions/fetch-ci-data@v1
+        - uses: oxidize-rb/actions/fetch-ci-data@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
           id: fetch
           with:
             supported-ruby-platforms: |
@@ -24,16 +24,16 @@
     source-gem:
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-        - uses: ruby/setup-ruby@v1
+        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
           with:
             bundler-cache: true
 
         - name: Build gem
           run: bundle exec rake build
 
-        - uses: actions/upload-artifact@v4.6.0
+        - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
           with:
             name: source-gem
             path: pkg/*.gem
@@ -46,19 +46,19 @@
         matrix:
           platform: ${{ fromJSON(needs.ci-data.outputs.result).supported-ruby-platforms }}
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-        - uses: ruby/setup-ruby@v1
+        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
           with:
             bundler-cache: true
 
-        - uses: oxidize-rb/actions/cross-gem@v1
+        - uses: oxidize-rb/actions/cross-gem@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
           id: cross-gem
           with:
             platform: ${{ matrix.platform }}
             ruby-versions: ${{ join(fromJSON(needs.ci-data.outputs.result).stable-ruby-versions, ',') }}
 
-        - uses: actions/upload-artifact@v4.6.0
+        - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
           with:
             name: cross-gem-${{ matrix.platform }}
             path: ${{ steps.cross-gem.outputs.gem-path }}
@@ -69,7 +69,7 @@
       needs: cross-gem-compile
       steps:
         - name: Merge Artifacts
-          uses: actions/upload-artifact/merge@v4.6.0
+          uses: actions/upload-artifact/merge@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
           with:
             name: cross-gem
             pattern: cross-gem-*
@@ -82,14 +82,14 @@
         matrix:
           os: ["ubuntu-latest", "macos-latest"]
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-        - uses: actions/download-artifact@v4.1.8
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: source-gem
             path: pkg
 
-        - uses: ruby/setup-ruby@v1
+        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
           with:
             ruby-version: "head"
 
@@ -104,14 +104,14 @@
         matrix:
           os: ["ubuntu-latest", "macos-latest", "windows-latest"]
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-        - uses: actions/download-artifact@v4.1.8
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: cross-gem
             path: pkg
 
-        - uses: ruby/setup-ruby@v1
+        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
 
         - name: Test cross gem install
           shell: bash
@@ -122,12 +122,12 @@
       needs: [test-cross-gem-install, test-source-gem-install]
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/download-artifact@v4.1.8
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: cross-gem
             path: cross-gem
 
-        - uses: actions/download-artifact@v4.1.8
+        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
           with:
             name: source-gem
             path: source-gem
@@ -140,7 +140,7 @@
 
         - name: Create release
           if: startsWith(github.ref, 'refs/tags/v')
-          uses: actions/github-script@v6
+          uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
           with:
             github-token: "${{ secrets.GITHUB_TOKEN }}"
             script: |
