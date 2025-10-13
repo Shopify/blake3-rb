@@ -14,7 +14,7 @@
       outputs:
         result: ${{ steps.fetch.outputs.result }}
       steps:
-        - uses: oxidize-rb/actions/fetch-ci-data@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
+        - uses: oxidize-rb/actions/fetch-ci-data@02b64e04ebb629c9b325137355369f43b1fcfa80 # v1.4.3
           id: fetch
           with:
             supported-ruby-platforms: |
@@ -52,7 +52,7 @@
           with:
             bundler-cache: true
 
-        - uses: oxidize-rb/actions/cross-gem@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
+        - uses: oxidize-rb/actions/cross-gem@02b64e04ebb629c9b325137355369f43b1fcfa80 # v1.4.3
           id: cross-gem
           with:
             platform: ${{ matrix.platform }}
