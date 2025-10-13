@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: oxidize-rb/actions/setup-ruby-and-rust@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
+      - uses: oxidize-rb/actions/setup-ruby-and-rust@02b64e04ebb629c9b325137355369f43b1fcfa80 # v1.4.3
         with:
           rustup-toolchain: "1.78"
           ruby-version: ${{ matrix.ruby }}
@@ -28,7 +28,7 @@ jobs:
           cargo-cache: true
           cache-version: v1
 
-      - uses: oxidize-rb/actions/cargo-binstall@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
+      - uses: oxidize-rb/actions/cargo-binstall@02b64e04ebb629c9b325137355369f43b1fcfa80 # v1.4.3
         with:
           crate: "b3sum"
           version: "1.5.1"
@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: oxidize-rb/actions/setup-ruby-and-rust@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
+      - uses: oxidize-rb/actions/setup-ruby-and-rust@02b64e04ebb629c9b325137355369f43b1fcfa80 # v1.4.3
         with:
           rustup-toolchain: "1.78"
           ruby-version: "3.3"
