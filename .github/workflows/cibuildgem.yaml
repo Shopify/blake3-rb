@@ -59,6 +59,7 @@ jobs:
         uses: "shopify/cibuildgem/.github/actions/cibuildgem@main"
         with:
           step: "test_${{ matrix.type }}"
+          test-command: "bundle exec rake ruby_test"
   install:
     timeout-minutes: 5
     name: "Verify the gem can be installed"
@@ -80,6 +81,7 @@ jobs:
         with:
           step: "install"
   release:
+    environment: release
     permissions:
       id-token: write
       contents: read
