@@ -21,7 +21,7 @@ jobs:
       - name: "Setup Ruby"
         uses: "ruby/setup-ruby@v1"
         with:
-          ruby-version: "3.1.7"
+          ruby-version: "3.2.9"
           bundler-cache: true
       - name: "Set RUST_TARGET for windows"
         if: ${{ runner.os == 'Windows' }}
@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
         os: ["macos-latest", "ubuntu-22.04", "windows-latest", "macos-15-intel"]
-        rubies: ["3.1", "3.2", "3.3", "3.4"]
+        rubies: ["3.2", "3.3", "3.4", "4.0"]
         type: ["cross", "native"]
     runs-on: "${{ matrix.os }}"
     steps:
