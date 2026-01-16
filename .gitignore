@@ -13,3 +13,4 @@
 mkmf.log
 target/
 .DS_Store
+Gemfile.lock
