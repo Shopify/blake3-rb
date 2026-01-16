@@ -14,13 +14,13 @@
       outputs:
         result: ${{ steps.fetch.outputs.result }}
       steps:
-        - uses: oxidize-rb/actions/fetch-ci-data@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
+        - uses: oxidize-rb/actions/fetch-ci-data@6af66d8dd30d219b8d8d4072bd6e49b4f6d37245 # main
           id: fetch
           with:
             supported-ruby-platforms: |
               exclude: ["arm-linux", "x64-mingw32"]
             stable-ruby-versions: |
-              exclude: ["2.5", "2.6", "2.7", "3.0", "head"]
+              exclude: ["2.5", "2.6", "2.7", "3.0", "3.1", "head"]
     source-gem:
       runs-on: ubuntu-latest
       steps:
@@ -52,7 +52,7 @@
           with:
             bundler-cache: true
 
-        - uses: oxidize-rb/actions/cross-gem@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
+        - uses: oxidize-rb/actions/cross-gem@6af66d8dd30d219b8d8d4072bd6e49b4f6d37245 # main
           id: cross-gem
           with:
             platform: ${{ matrix.platform }}
