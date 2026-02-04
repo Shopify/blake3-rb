@@ -64,34 +64,16 @@ end
 dir_config(extension_name)
 create_makefile("digest/blake3/#{extension_name}")
 
-# Append custom rules for SIMD compilation on x86
-# Each SIMD implementation requires specific compiler flags to enable
-# the corresponding instruction set, but runtime detection chooses which to use
+# Append target-specific SIMD flags on x86
+# Uses GNU Make's target-specific variable feature to add instruction-set flags
+# while inheriting the standard .c.o compilation rule from mkmf
 if is_x86
-  makefile = File.read("Makefile")
-
-  simd_rules = <<~RULES
-
-    # SIMD-specific compilation rules
-    # Each file is compiled with flags to enable that instruction set
-    # Runtime detection in blake3_dispatch.c selects the best implementation
-    blake3_sse2.o: $(srcdir)/blake3/blake3_sse2.c
-    \t$(ECHO) compiling $(<)
-    \t$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) -msse2 -c -o $@ $<
-
-    blake3_sse41.o: $(srcdir)/blake3/blake3_sse41.c
-    \t$(ECHO) compiling $(<)
-    \t$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) -msse4.1 -c -o $@ $<
-
-    blake3_avx2.o: $(srcdir)/blake3/blake3_avx2.c
-    \t$(ECHO) compiling $(<)
-    \t$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) -mavx2 -c -o $@ $<
-
-    blake3_avx512.o: $(srcdir)/blake3/blake3_avx512.c
-    \t$(ECHO) compiling $(<)
-    \t$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) -mavx512f -mavx512vl -c -o $@ $<
-
-  RULES
-
-  File.write("Makefile", makefile + simd_rules)
+  File.open("Makefile", "a") do |f|
+    f.puts
+    f.puts "# Target-specific SIMD compiler flags"
+    f.puts "blake3_sse2.o: CFLAGS += -msse2"
+    f.puts "blake3_sse41.o: CFLAGS += -msse4.1"
+    f.puts "blake3_avx2.o: CFLAGS += -mavx2"
+    f.puts "blake3_avx512.o: CFLAGS += -mavx512f -mavx512vl"
+  end
 end
