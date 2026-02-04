@@ -11,5 +11,9 @@
 *.o
 *.a
 mkmf.log
-target/
 .DS_Store
+Makefile
+/lib/digest/blake3/*.bundle
+/lib/digest/blake3/*.so
+/ext/digest/blake3_ext/Makefile
+/ext/digest/blake3_ext/*.o

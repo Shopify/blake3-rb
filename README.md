@@ -13,12 +13,13 @@ Add this line to your application's Gemfile:
 gem "blake3-rb"
 ```
 
-We provide pre-built binaries most common platforms. This is the preferred way to install this gem since it will be faster and more reliable than compiling from source. Make sure Bundler is configured to use the pre-built binaries by running:
+And then execute:
 
 ```bash
-bundle lock --add-platform x86_64-linux
-bundle install    # resolve dependencies for platform-specific gems
+bundle install
 ```
+
+The gem includes a C extension that will be compiled during installation. A C compiler is required (e.g., gcc, clang).
 
 ## Usage
 

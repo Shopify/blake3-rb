@@ -3,11 +3,6 @@ set -euo pipefail
 IFS=$'\n\t'
 set -e
 
-if ! command -v cargo >/dev/null; then
-  echo "ERROR: Rust is not installed, please install and try again (https:///rustup.rs)."
-  exit 1
-fi
-
 if ! command -v b3sum >/dev/null; then
   echo "ERROR: b3sum is not installed, please install and try again"
   exit 1
