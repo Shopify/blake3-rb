@@ -2,7 +2,6 @@
 
 require "rake/testtask"
 require "bundler/gem_tasks"
-require "timeout"
 
 GEMSPEC = Bundler.load_gemspec("blake3-rb.gemspec")
 
@@ -74,39 +73,17 @@ rescue LoadError
 end
 
 begin
-  require "rb_sys/extensiontask"
+  require "rake/extensiontask"
 
-  RbSys::ExtensionTask.new("blake3_ext", GEMSPEC) do |ext|
+  Rake::ExtensionTask.new("blake3_ext", GEMSPEC) do |ext|
+    ext.ext_dir = "ext/digest/blake3_ext"
     ext.lib_dir = "lib/digest/blake3"
   end
-rescue Errno::ENOENT
-  warn("WARN: cargo not installed, so no compile tasks will be defined")
-end
-
-desc "Run cargo test"
-task :cargo_test do
-  Timeout.timeout(30) do
-    sh("cargo", "test", "--workspace", "--", "--nocapture")
-  end
-rescue
-  Dir["target/debug/deps/*"].each do |f|
-    next unless f.start_with?("blake3_ext")
-
-    puts "::group::nm #{f}"
-    system("nm", f)
-    puts "::endgroup::"
-  end
-
-  if RUBY_VERSION.start_with?("3.1")
-    warn("WARN: cargo test failed, but this is a bug on Ruby 3.1")
-  elsif RUBY_VERSION.start_with?("3.4")
-    warn("WARN: cargo test failed, but this is a known issue on Ruby 3.4")
-  else
-    abort("ERROR: cargo test failed")
-  end
+rescue LoadError
+  warn("WARN: rake-compiler not installed, so no compile tasks will be defined")
 end
 
 desc "Run all tests"
-task test: [:ruby_test, :cargo_test]
+task test: [:ruby_test]
 
 task default: [:compile, :test, :rubocop]
