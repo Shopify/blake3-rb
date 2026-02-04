@@ -8,3 +8,7 @@ AllCops:
 Naming/FileName:
   Exclude:
     - 'lib/blake3-rb.rb'
+
+Style/GlobalVars:
+  Exclude:
+    - 'ext/digest/blake3_ext/extconf.rb'
