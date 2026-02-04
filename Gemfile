@@ -7,7 +7,6 @@ gemspec
 
 gem "rake-compiler"
 gem "rake"
-gem "rb_sys"
 gem "minitest"
 gem "rubocop"
 gem "rubocop-shopify"
