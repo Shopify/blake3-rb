@@ -20,18 +20,20 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: oxidize-rb/actions/setup-ruby-and-rust@e5f9a49a7812a078584072f6e3f657ad247c8771 # v1.4.4
+      - uses: ruby/setup-ruby@a2bbe5b1b236842c1cb7dd11e8e3b51e0a616acc # v1
         with:
-          rustup-toolchain: "1.85"
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-          cargo-cache: true
-          cache-version: v1
 
-      - uses: oxidize-rb/actions/cargo-binstall@e5f9a49a7812a078584072f6e3f657ad247c8771 # v.1.4.4
-        with:
-          crate: "b3sum"
-          version: "1.5.1"
+      - name: Install b3sum for parity tests
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            curl -sSL https://github.com/BLAKE3-team/BLAKE3/releases/download/1.5.1/b3sum_linux_x64_bin -o b3sum
+            chmod +x b3sum
+            sudo mv b3sum /usr/local/bin/
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            brew install b3sum
+          fi
 
       - name: Compile
         run: bundle exec rake compile
@@ -44,19 +46,10 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: oxidize-rb/actions/setup-ruby-and-rust@e5f9a49a7812a078584072f6e3f657ad247c8771 # v1.4.4
+      - uses: ruby/setup-ruby@a2bbe5b1b236842c1cb7dd11e8e3b51e0a616acc # v1
         with:
-          rustup-toolchain: "1.80"
           ruby-version: "3.3"
           bundler-cache: true
-          cargo-cache: true
-          cache-version: v1
-
-      - name: Clippy
-        run: cargo clippy -- -D warnings
-
-      - name: Cargo
-        run: cargo fmt --check
 
       - name: Rubocop
         run: bundle exec rake rubocop

@@ -1,172 +1,93 @@
 ---
-  name: Release
+name: Release
 
-  on:
-    push:
-      tags:
-        - "v*"
-        - "cross-gem/*"
-    workflow_dispatch:
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
 
-  jobs:
-    ci-data:
-      runs-on: ubuntu-latest
-      outputs:
-        result: ${{ steps.fetch.outputs.result }}
-      steps:
-        - uses: oxidize-rb/actions/fetch-ci-data@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
-          id: fetch
-          with:
-            supported-ruby-platforms: |
-              exclude: ["arm-linux", "x64-mingw32"]
-            stable-ruby-versions: |
-              exclude: ["2.5", "2.6", "2.7", "3.0", "head"]
-    source-gem:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+jobs:
+  source-gem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
-          with:
-            bundler-cache: true
+      - uses: ruby/setup-ruby@a2bbe5b1b236842c1cb7dd11e8e3b51e0a616acc # v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
 
-        - name: Build gem
-          run: bundle exec rake build
+      - name: Build gem
+        run: bundle exec rake build
 
-        - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-          with:
-            name: source-gem
-            path: pkg/*.gem
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: source-gem
+          path: pkg/*.gem
 
-    cross-gem-compile:
-      name: Compile native gem for ${{ matrix.platform }}
-      runs-on: ubuntu-latest
-      needs: ci-data
-      strategy:
-        matrix:
-          platform: ${{ fromJSON(needs.ci-data.outputs.result).supported-ruby-platforms }}
-      steps:
-        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  test-source-gem-install:
+    runs-on: ${{ matrix.os }}
+    needs: source-gem
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "macos-latest"]
+        ruby: ["3.2", "3.3", "3.4"]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
-          with:
-            bundler-cache: true
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: source-gem
+          path: pkg
 
-        - uses: oxidize-rb/actions/cross-gem@d4731ac609739be0920f0faf5569b58b8eb1a262 # v1.4.0
-          id: cross-gem
-          with:
-            platform: ${{ matrix.platform }}
-            ruby-versions: ${{ join(fromJSON(needs.ci-data.outputs.result).stable-ruby-versions, ',') }}
+      - uses: ruby/setup-ruby@a2bbe5b1b236842c1cb7dd11e8e3b51e0a616acc # v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
 
-        - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-          with:
-            name: cross-gem-${{ matrix.platform }}
-            path: ${{ steps.cross-gem.outputs.gem-path }}
-          
-    cross-gem:
-      name: cross-gem
-      runs-on: ubuntu-latest
-      needs: cross-gem-compile
-      steps:
-        - name: Merge Artifacts
-          uses: actions/upload-artifact/merge@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-          with:
-            name: cross-gem
-            pattern: cross-gem-*
-            delete-merged: true
+      - name: Test source gem install
+        shell: bash
+        run: test/test_gem_install.sh pkg/*.gem
 
-    test-source-gem-install:
-      runs-on: ${{ matrix.os }}
-      needs: source-gem
-      strategy:
-        matrix:
-          os: ["ubuntu-latest", "macos-latest"]
-      steps:
-        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  release:
+    name: Create release for ${{ github.ref }}
+    needs: [test-source-gem-install]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: source-gem
+          path: pkg
 
-        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-          with:
-            name: source-gem
-            path: pkg
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            const fs = require("fs");
+            const path = require("path");
 
-        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
-          with:
-            ruby-version: "head"
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: "${{ github.ref }}",
+              name: "${{ github.ref_name }}",
+              generate_release_notes: true
+            });
 
-        - name: Test source gem install
-          shell: bash
-          run: test/test_gem_install.sh pkg/*.gem
+            const globber = await glob.create("pkg/*.gem");
 
-    test-cross-gem-install:
-      runs-on: ${{ matrix.os }}
-      needs: cross-gem
-      strategy:
-        matrix:
-          os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-      steps:
-        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+            for await (const file of globber.globGenerator()) {
+              console.log("Uploading " + file);
 
-        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-          with:
-            name: cross-gem
-            path: pkg
+              const data = fs.readFileSync(file);
 
-        - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
-
-        - name: Test cross gem install
-          shell: bash
-          run: test/test_gem_install.sh precompiled
-
-    release:
-      name: Create release for ${{ github.ref }}
-      needs: [test-cross-gem-install, test-source-gem-install]
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-          with:
-            name: cross-gem
-            path: cross-gem
-
-        - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-          with:
-            name: source-gem
-            path: source-gem
-
-        - name: Move gems to pkg
-          run: |
-            ls -la cross-gem source-gem
-            mkdir -p pkg
-            cp cross-gem/*.gem source-gem/*.gem pkg/
-
-        - name: Create release
-          if: startsWith(github.ref, 'refs/tags/v')
-          uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
-          with:
-            github-token: "${{ secrets.GITHUB_TOKEN }}"
-            script: |
-              const fs = require("fs");
-              const path = require("path");
-
-              const release = await github.rest.repos.createRelease({
+              await github.rest.repos.uploadReleaseAsset({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                tag_name: "${{ github.ref }}",
-                name: "${{ github.ref_name }}",
-                generate_release_notes: true
+                release_id: release.data.id,
+                name: path.basename(file),
+                data: data,
               });
-
-              const globber =  await glob.create("pkg/*.gem");
-
-              for await (const file of globber.globGenerator()) {
-                console.log("Uploading " + file);
-
-                const data = fs.readFileSync(file);
-
-                await github.rest.repos.uploadReleaseAsset({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  release_id: release.data.id,
-                  name: path.basename(file),
-                  data: data,
-                });
-              }
+            }
