@@ -2,7 +2,9 @@
 
 Gem::Specification.new do |spec|
   spec.name = "blake3-rb"
-  spec.version = "1.5.6.rc1"
+  # Load version into an anonymous module to avoid polluting the global namespace
+  # and to prevent class inheritance conflicts with Digest::Blake3 < Digest::Base
+  spec.version = Module.new.then { |m| load(File.join(__dir__, "lib/digest/blake3/version.rb"), m); m::Digest::Blake3::VERSION }
   spec.authors = ["Ian Ker-Seymer"]
 
   spec.summary = "Blake3 hash function bindings for Ruby."

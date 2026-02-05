@@ -7,4 +7,5 @@ module Digest
   end
 end
 
+require_relative "blake3/version"
 require_relative "blake3/blake3_ext"
