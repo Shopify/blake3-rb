@@ -18,11 +18,12 @@ task :release do
 
   abort("ERROR: #{GEMSPEC.version} tag already exists") if system("git rev-parse #{new_git_tag}")
 
-  old_gemspec = File.read("blake3-rb.gemspec")
-  new_gemspec = old_gemspec.gsub("version = \"#{old_version}\"", "version = \"#{new_version}\"")
+  version_file = "lib/digest/blake3/version.rb"
+  old_content = File.read(version_file)
+  new_content = old_content.gsub("VERSION = \"#{old_version}\"", "VERSION = \"#{new_version}\"")
 
-  File.write("blake3-rb.gemspec", new_gemspec)
-  diff = %x(git diff blake3-rb.gemspec)
+  File.write(version_file, new_content)
+  diff = %x(git diff #{version_file})
 
   puts "Diff:\n#{diff}"
   print "Does this look good? (y/n): "
@@ -52,7 +53,7 @@ task :release do
       puts "Release complete, see #{shipit_link}"
     end
   else
-    File.write("blake3-rb.gemspec", old_gemspec)
+    File.write(version_file, old_content)
     puts "Aborting release"
   end
 end
