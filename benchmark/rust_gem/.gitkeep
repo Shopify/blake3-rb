@@ -1,0 +1,2 @@
+# This directory is used for benchmark comparisons against the Rust version.
+# Download the Rust gem here - see benchmark/run_comparison.rb for instructions.
