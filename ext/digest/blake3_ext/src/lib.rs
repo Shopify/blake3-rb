@@ -126,12 +126,12 @@ mod tests {
     }
 
     fn gen_random_bytes(max_len: usize) -> Vec<u8> {
-        let size = rand::random::<usize>() % max_len;
+        let size = rand::random_range(0..max_len);
         (0..size).map(|_| rand::random::<u8>()).collect()
     }
 
     fn gen_random_string(max_len: usize) -> String {
-        let size = rand::random::<usize>() % max_len;
+        let size = rand::random_range(0..max_len);
         (0..size)
             .map(|_| rand::random::<char>())
             .collect::<String>()

@@ -10,16 +10,16 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-rb-sys = { version = "0.9", features = ["stable-api-compiled-fallback"] }
+rb-sys = { version = "0.9.124", features = ["stable-api-compiled-fallback"] }
 blake3 = { version = "1.5" }
 
 [dev-dependencies]
 hex = "0.4.3"
-rand = "0.8.5"
-rb-sys-test-helpers = "0.2.0"
+rand = "0.9.2"
+rb-sys-test-helpers = "0.3.0"
 
 [build-dependencies]
-rb-sys-env = "0.2.1"
+rb-sys-env = "0.2.3"
 
 
 [lints.rust]
