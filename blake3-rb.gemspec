@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name = "blake3-rb"
-  spec.version = "1.5.6"
+  spec.version = "1.5.6.rc2"
   spec.authors = ["Ian Ker-Seymer"]
 
   spec.summary = "Blake3 hash function bindings for Ruby."
