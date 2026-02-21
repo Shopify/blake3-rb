@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name = "blake3-rb"
-  spec.version = "1.5.6.rc1"
+  spec.version = "1.8.3.0.rc1"
   spec.authors = ["Ian Ker-Seymer"]
 
   spec.summary = "Blake3 hash function bindings for Ruby."
@@ -22,12 +22,12 @@ Gem::Specification.new do |spec|
     "ext/**/*.{rs,rb,toml}",
     "**/Cargo.{toml,lock}",
     "README.md",
-    "LICENSE.txt"
+    "LICENSE.txt",
   ]
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
   spec.extensions = ["ext/digest/blake3_ext/extconf.rb"]
 
-  spec.add_dependency("rb_sys", "~> 0.9")
+  spec.add_dependency("rb_sys", "~> 0.9.124")
 end

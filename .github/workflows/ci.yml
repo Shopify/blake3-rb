@@ -18,7 +18,7 @@ jobs:
         os: ["ubuntu-latest", "macos-latest"]
         ruby: ["3.2", "3.3", "3.4", "4.0", "ruby-head"]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@e5f9a49a7812a078584072f6e3f657ad247c8771 # v1.4.4
         with:
@@ -42,11 +42,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@e5f9a49a7812a078584072f6e3f657ad247c8771 # v1.4.4
         with:
-          rustup-toolchain: "1.80"
+          rustup-toolchain: "1.85"
           ruby-version: "3.3"
           bundler-cache: true
           cargo-cache: true

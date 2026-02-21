@@ -9,7 +9,7 @@ use std::ffi::{c_int, c_uchar, c_void};
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
 
-use bindings::{rb_digest_make_metadata, RbDigestMetadataT, RUBY_DIGEST_API_VERSION};
+use bindings::{RUBY_DIGEST_API_VERSION, RbDigestMetadataT, rb_digest_make_metadata};
 
 #[repr(C)]
 #[derive(Debug, Default)]
@@ -66,26 +66,30 @@ impl Blake3 {
 
 /// # Safety
 /// This function is called by Ruby, so it must be safe.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn Init_blake3_ext() {
-    rb_require("digest\0".as_ptr() as *const c_char);
-    let digest_module = rb_const_get(rb_cObject, rb_intern("Digest\0".as_ptr() as *const c_char));
-    let digest_base = rb_const_get(digest_module, rb_intern("Base\0".as_ptr() as *const c_char));
-    let klass = rb_define_class_under(
-        digest_module,
-        "Blake3\0".as_ptr() as *const c_char,
-        digest_base,
-    );
-    let meta = rb_digest_make_metadata(Blake3::digest_metadata());
-    let metadata_id = rb_intern("metadata\0".as_ptr() as *const c_char);
-    rb_ivar_set(klass, metadata_id, meta);
+    unsafe {
+        rb_require("digest\0".as_ptr() as *const c_char);
+        let digest_module =
+            rb_const_get(rb_cObject, rb_intern("Digest\0".as_ptr() as *const c_char));
+        let digest_base =
+            rb_const_get(digest_module, rb_intern("Base\0".as_ptr() as *const c_char));
+        let klass = rb_define_class_under(
+            digest_module,
+            "Blake3\0".as_ptr() as *const c_char,
+            digest_base,
+        );
+        let meta = rb_digest_make_metadata(Blake3::digest_metadata());
+        let metadata_id = rb_intern("metadata\0".as_ptr() as *const c_char);
+        rb_ivar_set(klass, metadata_id, meta);
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use rb_sys::{
-        rb_cObject, rb_const_get, rb_enc_set_index, rb_funcallv_public, rb_intern, rb_str_new,
-        rb_utf8_encindex, RSTRING_LEN, RSTRING_PTR,
+        RSTRING_LEN, RSTRING_PTR, rb_cObject, rb_const_get, rb_enc_set_index, rb_funcallv_public,
+        rb_intern, rb_str_new, rb_utf8_encindex,
     };
     use rb_sys_test_helpers::{protect, ruby_test};
 
@@ -126,12 +130,12 @@ mod tests {
     }
 
     fn gen_random_bytes(max_len: usize) -> Vec<u8> {
-        let size = rand::random::<usize>() % max_len;
+        let size = rand::random_range(0..max_len);
         (0..size).map(|_| rand::random::<u8>()).collect()
     }
 
     fn gen_random_string(max_len: usize) -> String {
-        let size = rand::random::<usize>() % max_len;
+        let size = rand::random_range(0..max_len);
         (0..size)
             .map(|_| rand::random::<char>())
             .collect::<String>()
