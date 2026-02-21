@@ -66,19 +66,23 @@ impl Blake3 {
 
 /// # Safety
 /// This function is called by Ruby, so it must be safe.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn Init_blake3_ext() {
-    rb_require("digest\0".as_ptr() as *const c_char);
-    let digest_module = rb_const_get(rb_cObject, rb_intern("Digest\0".as_ptr() as *const c_char));
-    let digest_base = rb_const_get(digest_module, rb_intern("Base\0".as_ptr() as *const c_char));
-    let klass = rb_define_class_under(
-        digest_module,
-        "Blake3\0".as_ptr() as *const c_char,
-        digest_base,
-    );
-    let meta = rb_digest_make_metadata(Blake3::digest_metadata());
-    let metadata_id = rb_intern("metadata\0".as_ptr() as *const c_char);
-    rb_ivar_set(klass, metadata_id, meta);
+    unsafe {
+        rb_require("digest\0".as_ptr() as *const c_char);
+        let digest_module =
+            rb_const_get(rb_cObject, rb_intern("Digest\0".as_ptr() as *const c_char));
+        let digest_base =
+            rb_const_get(digest_module, rb_intern("Base\0".as_ptr() as *const c_char));
+        let klass = rb_define_class_under(
+            digest_module,
+            "Blake3\0".as_ptr() as *const c_char,
+            digest_base,
+        );
+        let meta = rb_digest_make_metadata(Blake3::digest_metadata());
+        let metadata_id = rb_intern("metadata\0".as_ptr() as *const c_char);
+        rb_ivar_set(klass, metadata_id, meta);
+    }
 }
 
 #[cfg(test)]

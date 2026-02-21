@@ -36,19 +36,23 @@ pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE
         INIT.call_once(|| {
             let lib_name = "digest.so\0".as_ptr() as *const c_char;
             let symbol_name = "rb_digest_wrap_metadata\0".as_ptr() as *const c_char;
-            let symbol_ptr = rb_ext_resolve_symbol(lib_name, symbol_name);
+            let symbol_ptr = unsafe { rb_ext_resolve_symbol(lib_name, symbol_name) };
 
             if !symbol_ptr.is_null() {
-                WRAPPER = Some(std::mem::transmute::<*mut c_void, WrapperType>(symbol_ptr));
+                unsafe {
+                    WRAPPER = Some(std::mem::transmute::<*mut c_void, WrapperType>(symbol_ptr));
+                }
             } else {
                 panic!("Failed to resolve rb_digest_wrap_metadata");
             }
         });
     }
 
-    load_wrapper();
-    if let Some(wrapper) = WRAPPER {
-        return wrapper(meta);
+    unsafe {
+        load_wrapper();
+        if let Some(wrapper) = WRAPPER {
+            return wrapper(meta);
+        }
     }
     panic!("Failed to resolve rb_digest_wrap_metadata");
 }
