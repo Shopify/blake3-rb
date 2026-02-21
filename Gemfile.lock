@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    blake3-rb (1.8.3.0.rc1)
+    blake3-rb (1.8.3.0)
       rb_sys (~> 0.9.124)
 
 GEM
