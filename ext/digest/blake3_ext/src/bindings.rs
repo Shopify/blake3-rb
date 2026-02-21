@@ -1,4 +1,4 @@
-use rb_sys::{size_t, VALUE};
+use rb_sys::{VALUE, size_t};
 use std::ffi::{c_int, c_uchar, c_void};
 
 pub const RUBY_DIGEST_API_VERSION: c_int = 3;
@@ -60,11 +60,13 @@ pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE
 #[cfg(not(any(digest_use_rb_ext_resolve_symbol, ruby_gte_3_4)))]
 pub unsafe fn rb_digest_make_metadata(meta: &'static RbDigestMetadataT) -> VALUE {
     use rb_sys::{rb_data_object_wrap, rb_obj_freeze};
-    let data = rb_data_object_wrap(
-        0 as VALUE,
-        meta as *const RbDigestMetadataT as *mut c_void,
-        None,
-        None,
-    );
-    rb_obj_freeze(data)
+    unsafe {
+        let data = rb_data_object_wrap(
+            0 as VALUE,
+            meta as *const RbDigestMetadataT as *mut c_void,
+            None,
+            None,
+        );
+        rb_obj_freeze(data)
+    }
 }

@@ -9,7 +9,7 @@ use std::ffi::{c_int, c_uchar, c_void};
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
 
-use bindings::{rb_digest_make_metadata, RbDigestMetadataT, RUBY_DIGEST_API_VERSION};
+use bindings::{RUBY_DIGEST_API_VERSION, RbDigestMetadataT, rb_digest_make_metadata};
 
 #[repr(C)]
 #[derive(Debug, Default)]
@@ -88,8 +88,8 @@ pub unsafe extern "C" fn Init_blake3_ext() {
 #[cfg(test)]
 mod tests {
     use rb_sys::{
-        rb_cObject, rb_const_get, rb_enc_set_index, rb_funcallv_public, rb_intern, rb_str_new,
-        rb_utf8_encindex, RSTRING_LEN, RSTRING_PTR,
+        RSTRING_LEN, RSTRING_PTR, rb_cObject, rb_const_get, rb_enc_set_index, rb_funcallv_public,
+        rb_intern, rb_str_new, rb_utf8_encindex,
     };
     use rb_sys_test_helpers::{protect, ruby_test};
 

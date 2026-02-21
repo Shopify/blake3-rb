@@ -22,12 +22,12 @@ Gem::Specification.new do |spec|
     "ext/**/*.{rs,rb,toml}",
     "**/Cargo.{toml,lock}",
     "README.md",
-    "LICENSE.txt"
+    "LICENSE.txt",
   ]
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
   spec.extensions = ["ext/digest/blake3_ext/extconf.rb"]
 
-  spec.add_dependency("rb_sys", "~> 0.9")
+  spec.add_dependency("rb_sys", "~> 0.9.124")
 end
