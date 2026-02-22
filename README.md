@@ -13,7 +13,7 @@ Add this line to your application's Gemfile:
 gem "blake3-rb"
 ```
 
-We provide pre-built binaries most common platforms. This is the preferred way to install this gem since it will be faster and more reliable than compiling from source. Make sure Bundler is configured to use the pre-built binaries by running:
+We provide pre-built binaries for most common platforms. This is the preferred way to install this gem since it will be faster and more reliable than compiling from source. Make sure Bundler is configured to use the pre-built binaries by running:
 
 ```bash
 bundle lock --add-platform x86_64-linux
@@ -116,7 +116,7 @@ Comparison:
 
 ## Testing
 
-First, make sure your development environment is setup:
+First, make sure your development environment is set up:
 
 ```bash
 $ bin/setup
